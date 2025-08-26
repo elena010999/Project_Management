@@ -12,4 +12,21 @@
 # Helper functions (later):
 #   monitor_collect_once PID
 #   monitor_check_threshold PID
+#!/bin/bash
+
+read -p "Please enter the PID: " pid
+echo "You entered: $pid"
+
+# Check if process exists
+if ! ps -p "$pid" > /dev/null 2>&1; then
+    echo "No process found with PID $pid"
+    exit 2
+fi
+
+# Collect CPU and memory usage
+cpu=$(ps -p "$pid" -o %cpu=)
+mem=$(ps -p "$pid" -o %mem=)
+
+# Show results
+echo "PID $pid CPU: $cpu% MEM: $mem%"
 
