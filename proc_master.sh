@@ -25,4 +25,4 @@
 # TODO (next step):
 #   - Implement main_menu function to present choices
 #   - Wire menu options to *_run entry points
-
+echo "I run"
