@@ -1,28 +1,51 @@
 #!/bin/bash
 #
-# Project: proc_master.sh
-# Main entry point – menu-driven process management tool
-#
-# Responsibilities:
-#   - Initialize environment (config, logging, notify)
-#   - Load feature scripts
-#   - Display main menu
-#   - Dispatch user choice to the correct feature run-function
-#
-# Sourcing order:
-#   1. utils/config.sh
-#   2. utils/logging.sh
-#   3. utils/notify.sh
-#   4. features/*.sh
-#
-# Main functions to call:
-#   - monitor_run
-#   - manager_run
-#   - zombies_run
-#   - tree_run
-#   - sandbox_run
-#
-# TODO (next step):
-#   - Implement main_menu function to present choices
-#   - Wire menu options to *_run entry points
-echo "I run"
+# Main Menu - Proc Master
+# Entry point for all features
+
+# Import utils
+source ./utils/logging.sh
+source ./utils/notify.sh
+source ./utils/config.sh
+
+while true; do
+    clear
+    echo "====================================="
+    echo "         🐧 Proc Master Menu"
+    echo "====================================="
+    echo "1) Process Monitor & Resource Tracker"
+    echo "2) Interactive Process Manager"
+    echo "3) Zombie Process Cleaner"
+    echo "4) Process Tree Visualizer"
+    echo "5) Process Sandbox Launcher"
+    echo "0) Exit"
+    echo "====================================="
+    read -p "Choose an option: " choice
+
+    case $choice in
+        1)
+            ./features/monitor.sh
+            ;;
+        2)
+            ./features/manager.sh
+            ;;
+        3)
+            ./features/zombies.sh
+            ;;
+        4)
+            ./features/tree.sh
+            ;;
+        5)
+            ./features/sandbox.sh
+            ;;
+        0)
+            echo "Exiting Proc Master. Goodbye!"
+            exit 0
+            ;;
+        *)
+            echo "Invalid option. Try again."
+            sleep 1
+            ;;
+    esac
+done
+

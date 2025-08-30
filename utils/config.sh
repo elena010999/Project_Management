@@ -2,91 +2,51 @@
 #
 # utils/config.sh
 #
-# Configuration utility for proc_master
-# - Loads default values
+# Simple configuration loader for Proc Master
 # - Loads user config file (proc_master.conf)
-# - Provides functions to access settings
+# - Makes variables available to all feature scripts
+# - No arrays, just plain shell variables
 #
 
 # -------------------------------
-# Default configuration values
+# 1. Define default config file path
 # -------------------------------
-declare -A PM_CONFIG
-PM_CONFIG[LOG_DIR]="./logs"
-PM_CONFIG[LOG_LEVEL]="INFO"
-PM_CONFIG[ALERT_CPU]="80"
-PM_CONFIG[ALERT_MEM]="80"
-PM_CONFIG[NOTIFY_METHOD]="desktop"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+CONFIG_FILE="$PROJECT_ROOT/config/proc_master.conf"
 
 # -------------------------------
-# Function: pm_config_init
-# Description: Load config from file and override defaults
-# Parameters:
-#   CONFIG_PATH - path to configuration file (optional)
+# 2. Check if config file exists
 # -------------------------------
-pm_config_init() {
-    local config_file="$1"
-
-    # If no file provided, use default
-    if [[ -z "$config_file" ]]; then
-        config_file="./config/proc_master.conf"
-    fi
-
-    # Check if config file exists
-    if [[ -f "$config_file" ]]; then
-        while IFS='=' read -r key value; do
-            # Ignore comments and empty lines
-            [[ "$key" =~ ^#.*$ || -z "$key" ]] && continue
-            key=$(echo "$key" | xargs)   # trim spaces
-            value=$(echo "$value" | xargs)
-            PM_CONFIG["$key"]="$value"
-        done < "$config_file"
-    fi
-}
+if [[ ! -f "$CONFIG_FILE" ]]; then
+    echo "[ERROR] Config file not found: $CONFIG_FILE"
+    echo "Please make sure proc_master.conf exists in ../config/"
+    exit 1
+fi
 
 # -------------------------------
-# Function: pm_config_get
-# Description: Get value of a config key
-# Parameters:
-#   KEY     - name of the config variable
-#   DEFAULT - value to return if key not set (optional)
-# Returns:
-#   Echoes the value
+# 3. Load configuration file
 # -------------------------------
-pm_config_get() {
-    local key="$1"
-    local default="$2"
-
-    if [[ -n "${PM_CONFIG[$key]}" ]]; then
-        echo "${PM_CONFIG[$key]}"
-    else
-        echo "$default"
-    fi
-}
+# Variables in proc_master.conf will become available directly
+source "$CONFIG_FILE"
 
 # -------------------------------
-# Function: pm_config_require
-# Description: Ensure a config key exists, exit if missing
-# Parameters:
-#   KEY - name of the required config variable
+# 4. Optional: Validate required variables
 # -------------------------------
-pm_config_require() {
-    local key="$1"
-
-    if [[ -z "${PM_CONFIG[$key]}" ]]; then
-        echo "ERROR: Required config key '$key' is missing!" >&2
-        exit 1
-    fi
-}
+# Exit if critical variables are missing
+[[ -z "$LOG_DIR" ]] && echo "[ERROR] LOG_DIR not defined in config!" && exit 1
+[[ -z "$LOG_LEVEL" ]] && echo "[ERROR] LOG_LEVEL not defined in config!" && exit 1
+[[ -z "$ALERT_CPU" ]] && echo "[ERROR] ALERT_CPU not defined in config!" && exit 1
+[[ -z "$ALERT_MEM" ]] && echo "[ERROR] ALERT_MEM not defined in config!" && exit 1
+[[ -z "$NOTIFY_METHOD" ]] && echo "[ERROR] NOTIFY_METHOD not defined in config!" && exit 1
 
 # -------------------------------
-# Function: pm_config_dump
-# Description: Print all current config values (for debugging)
+# 5. Optional: Debug output
 # -------------------------------
-pm_config_dump() {
-    echo "Current proc_master configuration:"
-    for key in "${!PM_CONFIG[@]}"; do
-        echo "$key=${PM_CONFIG[$key]}"
-    done
-}
+ echo "Configuration loaded:"
+ echo "LOG_DIR=$LOG_DIR"
+ echo "LOG_LEVEL=$LOG_LEVEL"
+ echo "ALERT_CPU=$ALERT_CPU"
+ echo "ALERT_MEM=$ALERT_MEM"
+ echo "NOTIFY_METHOD=$NOTIFY_METHOD"
 
